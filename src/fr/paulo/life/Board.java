@@ -2,81 +2,64 @@ package fr.paulo.life;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class Board {
-    private long xSize;
-    private long ySize;
-    private long turn = 0;
-    private List<Cell> cells = new ArrayList<>();
+    private int boardSize;
+    private int turn = 0;
+    private Cell[][] cells;
 
-    public Board(long xSize, long ySize) {
-        this.xSize = xSize;
-        this.ySize = ySize;
+    public Board(int boardSize) {
+        this.boardSize = boardSize;
+        cells = new Cell[boardSize][boardSize];
 
-        for (long i = 0; i < xSize; i++) {
-            for (long j = 0; j < xSize; j++) {
-                cells.add(new Cell(i, j));
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                cells[i][j] = new Cell(false);
             }
         }
     }
 
     public void setCellCoordinatesAliveRandomly(double percentageOfRandomCell) {
-        for (int i = 0; i < xSize * ySize * percentageOfRandomCell; i++) {
-            long randomX = ThreadLocalRandom.current().nextLong(xSize + 1);
-            long randomY = ThreadLocalRandom.current().nextLong(ySize + 1);
+        for (int i = 0; i < boardSize * boardSize * percentageOfRandomCell; i++) {
+            int randomX = ThreadLocalRandom.current().nextInt(boardSize);
+            int randomY = ThreadLocalRandom.current().nextInt(boardSize);
             setCellAtCoordinateAlive(randomX, randomY);
         }
     }
 
-    public void setCellAtCoordinateAlive(long x, long y) {
-        Optional<Cell> option = cells.stream().filter(cell -> cell.hasCoordinate(x, y)).findFirst();
-        option.ifPresent(cell -> cell.setAlive(true));
+    public void setCellAtCoordinateAlive(int x, int y) {
+        cells[x][y].setAlive();
     }
 
     public void playTurn() {
-        List<Cell> cellsAfterTurn = new ArrayList<>();
-        for (long i = 0; i < xSize; i++) {
-            for (long j = 0; j < xSize; j++) {
-                final long x = i;
-                final long y = j;
-                Optional<Cell> option = cells.stream().filter(cell -> cell.hasCoordinate(x, y)).findFirst();
-                if (option.isPresent()) {
-                    cellsAfterTurn.add(new Cell(x, j, shouldCellBeAliveNextTime(cells, option.get())));
-                }
+        Cell[][] cellsAfterTurn = new Cell[boardSize][boardSize];
+        for (int i = 0; i < boardSize; i++) {
+            for (int j = 0; j < boardSize; j++) {
+                cellsAfterTurn[i][j] = new Cell(shouldCellBeAliveNextTime(cells, i, j));
             }
         }
         turn++;
-        cells = new ArrayList<>(cellsAfterTurn);
+        cells = cellsAfterTurn;
     }
 
-    private boolean shouldCellBeAliveNextTime(List<Cell> cellsAtTurn, Cell cell) {
-        int neighborsNumber = getAliveNeighbors(cellsAtTurn, cell.getXCor(), cell.getYCor()).size();
-        if (cell.isAlive()) {
+    private boolean shouldCellBeAliveNextTime(Cell[][] cellsAtTurn, int xCor, int yCor) {
+        int neighborsNumber = getAliveNeighbors(cellsAtTurn, xCor, yCor).size();
+        if (cellsAtTurn[xCor][yCor].isAlive()) {
             return neighborsNumber == 2 || neighborsNumber == 3;
         } else {
             return neighborsNumber == 3;
         }
     }
 
-    private List<Cell> getAliveNeighbors(List<Cell> cellsAtTurn, long x, long y) {
+    private List<Cell> getAliveNeighbors(Cell[][] cellsAtTurn, int x, int y) {
         List<Cell> aliveNeighbors = new ArrayList<>();
-        for (long i = x - 1; i <= x + 1; i++) {
-            for (long j = y - 1; j <= y + 1; j++) {
-                if (i == x && j == y) {
+        for (int i = x - 1; i <= x + 1; i++) {
+            for (int j = y - 1; j <= y + 1; j++) {
+                if ((i == x && j == y) || i < 0 || i >= boardSize || j < 0 || j >= boardSize) {
                     continue;
                 }
-
-                long finalI = i;
-                long finalJ = j;
-                Optional<Cell> option = cellsAtTurn.stream().filter(cell -> cell.hasCoordinate(finalI, finalJ)).findFirst();
-
-                if (!option.isPresent()) {
-                    continue;
-                }
-
-                Cell cell = option.get();
+                Cell cell = cellsAtTurn[i][j];
                 if (cell.isAlive()) {
                     aliveNeighbors.add(cell);
                 }
@@ -87,20 +70,14 @@ public class Board {
 
     public String display() {
         StringBuilder res = new StringBuilder("Turn: ").append(turn);
-        for (long i = 0; i < xSize; i++) {
+        for (int i = 0; i < boardSize; i++) {
             res.append("\n");
-            for (long j = 0; j < ySize; j++) {
-                final long x = i;
-                final long y = j;
-                Optional<Cell> option = cells.stream().filter(cell -> cell.hasCoordinate(x, y)).findFirst();
-                if (option.isPresent()) {
-                    if (option.get().isAlive()) {
-                        res.append('1');
-                    } else {
-                        res.append('0');
-                    }
+            for (int j = 0; j < boardSize; j++) {
+                Cell cell = cells[i][j];
+                if (cell.isAlive()) {
+                    res.append('1');
                 } else {
-                    res.append('X');
+                    res.append('0');
                 }
             }
         }

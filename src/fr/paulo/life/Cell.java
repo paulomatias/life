@@ -1,18 +1,9 @@
 package fr.paulo.life;
 
 public class Cell {
-    private long xCor;
-    private long yCor;
-    private boolean alive;
+    private boolean alive = false;
 
-    public Cell(long xCor, long yCor) {
-        this.xCor = xCor;
-        this.yCor = yCor;
-    }
-
-    public Cell(long xCor, long yCor, boolean alive) {
-        this.xCor = xCor;
-        this.yCor = yCor;
+    public Cell(boolean alive) {
         this.alive = alive;
     }
 
@@ -20,19 +11,7 @@ public class Cell {
         return alive;
     }
 
-    public long getXCor() {
-        return xCor;
-    }
-
-    public long getYCor() {
-        return yCor;
-    }
-
-    public void setAlive(boolean alive) {
-        this.alive = alive;
-    }
-
-    public boolean hasCoordinate(long x, long y) {
-        return xCor == x && yCor == y;
+    public void setAlive() {
+        this.alive = true;
     }
 }
