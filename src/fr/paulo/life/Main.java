@@ -1,18 +1,18 @@
 package fr.paulo.life;
 
+import javax.swing.*;
+import java.awt.*;
+
 public class Main {
-
     public static void main(String[] args) throws InterruptedException {
-        int boardSize = 25;
-        double percentageOfRandomCell = 0.2;
-        int numberOfTurns = 100_000;
+        int sleepingTime = 200;
 
-        Board board = new Board(boardSize);
-        board.setCellCoordinatesAliveRandomly(percentageOfRandomCell);
-        for (int i = 0; i < numberOfTurns; i++) {
-            board.display();
-            Thread.sleep(1_000);
-            board.playTurn();
+        BoardFrame board = new BoardFrame();
+        EventQueue.invokeLater(() -> board.setVisible(true));
+        while (true) {
+            SwingUtilities.updateComponentTreeUI(board);
+            Thread.sleep(sleepingTime);
+            board.computeNextGeneration();
         }
     }
 }
